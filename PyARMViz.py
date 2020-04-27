@@ -165,10 +165,10 @@ def _paracoord_builder(rules:List, unique_entities:List, axis_count:int):
             
         #Compose the plot object for this axis_index
         axis_object = dict(
-            range = [0, len(unique_entities) - 1], 
+            range = [0, len(unique_entities)], 
             label=label,
             ticktext=unique_entities,
-            tickvals=list(range(0, len(unique_entities) - 1)), 
+            tickvals=list(range(0, len(unique_entities))), 
             values=values
         )
         axis_objects.append(axis_object)
