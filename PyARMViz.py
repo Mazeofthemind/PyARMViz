@@ -258,6 +258,79 @@ def _parallel_category_builder(rules:List, axis_count:int):
     
     return axis_objects
 
+def generate_rule_graph_plotly(rules:List):
+    graph = _rule_graph_generator(rules)
+    pos = nx.spring_layout(graph, iterations=100)
+    
+    edge_x = []
+    edge_y = []
+    for edge in graph.edges():
+        src_node_ind = edge[0]
+        dst_node_ind = edge[1]
+        x0, y0 =  pos[src_node_ind]
+        x1, y1 =  pos[dst_node_ind]
+        edge_x.append(x0)
+        edge_x.append(x1)
+        edge_x.append(None)
+        edge_y.append(y0)
+        edge_y.append(y1)
+        edge_y.append(None)
+
+    edge_trace = go.Scatter(
+        x=edge_x, y=edge_y,
+        line=dict(width=0.5, color='#888'),
+        hoverinfo='none',
+        mode='lines')
+
+    node_text = []
+    node_x = []
+    node_y = []
+    for node in graph.nodes():
+        x, y = pos[node]
+        node_x.append(x)
+        node_y.append(y)
+        node_text.append(node)
+
+
+    node_trace = go.Scatter(
+        x=node_x, y=node_y,
+        mode='markers',
+        hoverinfo='text',
+        text=node_text,
+        marker=dict(
+            showscale=True,
+            # colorscale options
+            #'Greys' | 'YlGnBu' | 'Greens' | 'YlOrRd' | 'Bluered' | 'RdBu' |
+            #'Reds' | 'Blues' | 'Picnic' | 'Rainbow' | 'Portland' | 'Jet' |
+            #'Hot' | 'Blackbody' | 'Earth' | 'Electric' | 'Viridis' |
+            colorscale='YlGnBu',
+            reversescale=True,
+            color=[],
+            size=10,
+            colorbar=dict(
+                thickness=15,
+                title='Node Connections',
+                xanchor='left',
+                titleside='right'
+            ),
+            line_width=2))
+    fig = go.Figure(data=[edge_trace, node_trace],
+         layout=go.Layout(
+            title='<br>Network graph made with Python',
+            titlefont_size=16,
+            showlegend=False,
+            hovermode='closest',
+            margin=dict(b=20,l=5,r=5,t=40),
+            annotations=[ dict(
+                text="Python code: <a href='https://plotly.com/ipython-notebooks/network-graphs/'> https://plotly.com/ipython-notebooks/network-graphs/</a>",
+                showarrow=False,
+                xref="paper", yref="paper",
+                x=0.005, y=-0.002 ) ],
+            xaxis=dict(showgrid=False, zeroline=False, showticklabels=False),
+            yaxis=dict(showgrid=False, zeroline=False, showticklabels=False))
+            )
+    fig.show()
+
 def generate_rule_graph_graphml(rules:List, output_path:str=None):
     '''
     Uses networkX to produce a directed graph representation of the generated
@@ -266,95 +339,31 @@ def generate_rule_graph_graphml(rules:List, output_path:str=None):
     Either displays the resulting graph in the browser with Plotly or 
     export it as a graphml file to be viewed in a program like Gephi
     '''
+    graph = _rule_graph_generator(rules)
+    nx.write_gexf(graph, output_path)
+    logging.debug("Output rule graph to {}".format(output_path))
+    return graph
     
+def _rule_graph_generator(rules:List):
+    '''
+        Helper function to generate the base NetworkX graph from the provided association
+        rule list
+    '''
     graph = nx.DiGraph()
     for index, rule in enumerate(rules):
-        
-        
-        #Specifically add the nodes with strenght = 0 to ensure even visual filtering
-        graph.add_node(rule.rhs, strength=0)
-        graph.add_node(rule.lhs, strength=0)
-        graph.add_node (index, strength=rule.confidence)
-        graph.add_edge(index, rule.rhs)
-        graph.add_edge(rule.lhs, index)
+        graph.add_node (index, Weight=int(rule.confidence*10), type="Association_Rule")
+
+        for entity in rule.lhs:
+            graph.add_node(entity, Weight=1, type="Entity")
+            graph.add_edge(entity, index, Normalized_Lift=int(rule.lift*10))
+            
+        for entity in rule.rhs:
+            graph.add_node(entity, Weight=1, type="Entity")
+            graph.add_edge(index, entity, Normalized_Lift=int(rule.lift*10))
     
-    if output_path is not None:
-        nx.write_graphml(graph, output_path)
-        return graph
-    #Use plotly to visualize in browser
-    else:
-        
-        pos = nx.spring_layout(graph, iterations=100)
-        
-        edge_x = []
-        edge_y = []
-        for edge in graph.edges():
-            src_node_ind = edge[0]
-            dst_node_ind = edge[1]
-            x0, y0 =  pos[src_node_ind]
-            x1, y1 =  pos[dst_node_ind]
-            edge_x.append(x0)
-            edge_x.append(x1)
-            edge_x.append(None)
-            edge_y.append(y0)
-            edge_y.append(y1)
-            edge_y.append(None)
-
-        edge_trace = go.Scatter(
-            x=edge_x, y=edge_y,
-            line=dict(width=0.5, color='#888'),
-            hoverinfo='none',
-            mode='lines')
-
-        node_text = []
-        node_x = []
-        node_y = []
-        for node in graph.nodes():
-            x, y = pos[node]
-            node_x.append(x)
-            node_y.append(y)
-            node_text.append(node)
-
-
-        node_trace = go.Scatter(
-            x=node_x, y=node_y,
-            mode='markers',
-            hoverinfo='text',
-            text=node_text,
-            marker=dict(
-                showscale=True,
-                # colorscale options
-                #'Greys' | 'YlGnBu' | 'Greens' | 'YlOrRd' | 'Bluered' | 'RdBu' |
-                #'Reds' | 'Blues' | 'Picnic' | 'Rainbow' | 'Portland' | 'Jet' |
-                #'Hot' | 'Blackbody' | 'Earth' | 'Electric' | 'Viridis' |
-                colorscale='YlGnBu',
-                reversescale=True,
-                color=[],
-                size=10,
-                colorbar=dict(
-                    thickness=15,
-                    title='Node Connections',
-                    xanchor='left',
-                    titleside='right'
-                ),
-                line_width=2))
-        fig = go.Figure(data=[edge_trace, node_trace],
-             layout=go.Layout(
-                title='<br>Network graph made with Python',
-                titlefont_size=16,
-                showlegend=False,
-                hovermode='closest',
-                margin=dict(b=20,l=5,r=5,t=40),
-                annotations=[ dict(
-                    text="Python code: <a href='https://plotly.com/ipython-notebooks/network-graphs/'> https://plotly.com/ipython-notebooks/network-graphs/</a>",
-                    showarrow=False,
-                    xref="paper", yref="paper",
-                    x=0.005, y=-0.002 ) ],
-                xaxis=dict(showgrid=False, zeroline=False, showticklabels=False),
-                yaxis=dict(showgrid=False, zeroline=False, showticklabels=False))
-                )
-        fig.show()
-        return graph
+    logging.debug("Generated NetworkX graph for {} rules with {} nodes".format(len(rules), len(graph.nodes)))
+    return graph
+    
 
 def generate_rule_strength_plot(rules:List[Rule], allow_compound_flag:bool=False):
     '''
