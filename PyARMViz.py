@@ -10,7 +10,52 @@ from RareMiner.rules import Rule
 import numpy as np
 import math
 
-def generate_parallel_plot(rules:List):
+def generate_parallel_category_plot(rules:List):
+    '''
+        Visualizes the antecedents and consequents of each association rules by drawing lines
+        representing each rule across identical vertical axes representing the potential items
+        in the entire dataset
+        
+        Similar to parallel coordinate plot but more readible for small numbers of categorical
+        points
+    '''
+    unique_entities_by_axis_count = []
+    rules_by_axis_count = []
+    for rule in rules:
+        axis_required = len(rule.lhs) + 1 
+
+        #Filter out rules with multiple consequents
+        #TODO consider allowing multiple consequents
+        if len(rule.rhs) == 1:
+            #If the rules_by_axis_count list lacks a slot for the current number of antacedents, add them
+            while len(rules_by_axis_count) < axis_required - 1:
+                rules_by_axis_count.append([])
+                unique_entities_by_axis_count.append(set())
+            
+            #Add the rule and the entities found in its atecedents and consequents to their respective structure
+            rules_by_axis_count[axis_required - 2].append(rule)
+            unique_entities_by_axis_count[axis_required - 2] = unique_entities_by_axis_count[axis_required - 2].union(set(rule.lhs), set(rule.rhs))
+
+    axis_counter = 2
+    for rules, unique_entities in zip(rules_by_axis_count, unique_entities_by_axis_count): 
+        line_color = list(map(lambda rule: round(rule.confidence, 2), rules))
+    
+        dimensions = _parallel_category_builder(rules, axis_counter)
+        fig = go.Figure(data=
+            go.Parcats(
+                dimensions = dimensions,
+            )
+        )
+
+        fig.update_layout(
+            plot_bgcolor = 'white',
+            paper_bgcolor = 'white'
+        )
+
+        fig.show()    
+        axis_counter += 1    
+    
+def generate_parallel_coordinate_plot(rules:List):
     '''
         Visualizes the antecedents and consequents of each rule by drawing lines
         representing each rule across identical vertical axis representing the
@@ -46,11 +91,13 @@ def generate_parallel_plot(rules:List):
         unique_entities = list(unique_entities)
         unique_entities = _parallel_coord_axis_optimizer(rules, unique_entities, axis_counter)
     
+        line_color = list(map(lambda rule: round(rule.confidence, 2), rules))
+    
         dimensions = _paracoord_builder(rules, unique_entities, axis_counter)
         fig = go.Figure(data=
             go.Parcoords(
-                #line = dict(color = list(map(lambda original_value: axis_dictionary['class'].index(original_value), df['class'])),
-                #           colorscale = [[0,'purple'],[0.5,'lightseagreen'],[1,'gold']]),
+                line = dict(color = line_color,
+                           colorscale = [[0,'white'], [1,'red']]),
                 dimensions = dimensions
             )
         )
@@ -170,6 +217,42 @@ def _paracoord_builder(rules:List, unique_entities:List, axis_count:int):
             ticktext=unique_entities,
             tickvals=list(range(0, len(unique_entities))), 
             values=values
+        )
+        axis_objects.append(axis_object)
+    
+    return axis_objects
+
+def _parallel_category_builder(rules:List, axis_count:int):
+    '''
+        Helper function to generate list of unique entities across all provided rules to build axis_index 
+    '''
+    axis_objects = []
+    for axis_index in range(0,axis_count):
+        if axis_index < axis_count - 1:
+            antacedent_count = abs(axis_index - (axis_count - 1))
+            label = "Antacedent {}".format(antacedent_count)
+        else: 
+            label = "Consequent"
+            
+        #Iterate through rules, identify those relevant to that axis_index, and collect their values
+        values = []
+        for rule in rules:
+            #For all but the last axis_index, pull value from the left hand antacedents
+            if axis_index < axis_count - 1:
+                #If available, pull out the antacedent for this axis_index, otherwise add placeholder
+                if axis_index > len(rule.lhs) - 1:
+                    values.append(None)
+                else:
+                    #Note field contains the index of the value on the axis_index
+                    values.append(rule.lhs[axis_index])
+            #Otherwise add the right hand consequent
+            else:
+                #Note field contains the index of the value on the axis_index
+                values.append(rule.rhs[0])
+        #Compose the plot object for this axis_index
+        axis_object = dict(
+            label=label,
+            values=values,
         )
         axis_objects.append(axis_object)
     

@@ -44,11 +44,12 @@ class MyTest(unittest.TestCase):
         test_file_path = './test.graphml'
         graph = PyARMViz.generate_rule_graph_graphml(self.rules, test_file_path)
         self.assertTrue(os.path.exists(test_file_path))
-    
     def test_plotly_rule_strength_plot(self):
         PyARMViz.generate_rule_strength_plot(self.rules)
         self.assertTrue(True)
+    def test_plotly_parallel_coordinate_plot(self):
+        PyARMViz.generate_parallel_coordinate_plot(self.rules)
     '''  
-    def test_plotly_parallel_plot(self):
-        PyARMViz.generate_parallel_plot(self.rules)
+    def test_plotly_parallel_category_plot(self):
+        PyARMViz.generate_parallel_category_plot(self.rules)
         
