@@ -14,9 +14,9 @@ class MyTest(unittest.TestCase):
         logging.basicConfig(level=logging.DEBUG)
         #logging.basicConfig(level=logging.INFO)
 
-        RetailTransactions_df = pd.read_csv('./reduced_retail.csv',)
-        #RetailTransactions_df = pd.read_csv('./transactions_by_dept.csv',)
-        
+        #RetailTransactions_df = pd.read_csv('./ReducedRetail.parquet',)
+        RetailTransactions_df = pd.read_parquet('./ReducedRetail.parquet',)
+
         #print(RetailTransactions_df.columns)
         
         invoice_grouped_transactions_df = RetailTransactions_df.groupby(by=['CustomerID'])
@@ -24,14 +24,15 @@ class MyTest(unittest.TestCase):
         
         transaction_list = []
         for group_name, group in invoice_grouped_transactions_df:
-            items = tuple(group['StockCode'].unique())
+            items = tuple(group['Description'].unique())
             #items = tuple(group['Dept'].unique())
             transaction_list.append(items)
         
         total_length = len(transaction_list)
         
         #print(transaction_list)
-        results = RareMiner.apriori_frequent_from_collection(transaction_list, 0.05, 3, False)
+        #results = RareMiner.apriori_frequent_from_collection(transaction_list, 0.05, 3, False)
+        results = RareMiner.apriori_rare_from_collection(transaction_list, 0.1, 0.05, 3, False)
             
         self.rules = list(RareMiner.rules.generate_rules_apriori(results, 0.7, total_length))
     
