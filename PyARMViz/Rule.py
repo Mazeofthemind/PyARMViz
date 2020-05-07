@@ -201,9 +201,3 @@ def generate_rule_from_dict(rule_dict):
     '''
     return Rule(rule_dict['lhs'], rule_dict['rhs'], rule_dict['count_full'], 
                 rule_dict['count_lhs'], rule_dict['count_rhs'], rule_dict['num_transactions'])
-
-
-if __name__ == "__main__":
-    import pytest
-
-    pytest.main(args=[".", "--doctest-modules", "-v"])

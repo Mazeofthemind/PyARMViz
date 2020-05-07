@@ -6,7 +6,7 @@ Advanced Python Association Rule Visualization Library
 
 # We use semantic versioning
 # See https://semver.org/
-__version__ = "0.1.0"
+__version__ = "0.1.3"
 
 import sys 
 
