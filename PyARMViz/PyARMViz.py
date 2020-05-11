@@ -2,6 +2,8 @@ import plotly.graph_objects as go
 import networkx as nx
 import numpy as np
 
+from PyARMViz import Rule
+
 from typing import List
 import itertools
 
@@ -9,7 +11,40 @@ import logging
 
 import math
 
-def generate_parallel_category_plot(rules:List):
+def metadata_scatter_plot(rules:List, allow_compound_flag:bool=False):
+    '''
+    Visualizes the distribution of Association Rule Confidence, Support and Lift in the form of a
+    Plotly scatterplot
+    '''
+    id_list = []
+    confidence_list = []
+    lift_list = []
+    support_list = []
+    
+    for rule in rules:
+        #Discard compound rules (either pre or antecedents) if indicated 
+        if allow_compound_flag == False:
+            if len(rule.rhs) > 1 or len(rule.lhs) > 1:
+                continue
+
+        confidence_list.append(rule.confidence)
+        lift_list.append(rule.lift)
+        support_list.append(rule.support)
+        hover_text = "{} => {}, Lift: {}".format(rule.lhs, rule.rhs, rule.lift)
+        id_list.append(hover_text)
+        
+    colorbar=dict(
+        tick0=0,
+        dtick=1
+    )
+    
+    
+    fig = go.Figure(data=go.Scatter(x=support_list, y=confidence_list, text = id_list, mode='markers', marker={'color': lift_list, 'colorscale': "purp", 'colorbar':{'title': 'Lift'}},))
+    fig.update_layout(title="Association Rules Strength Distribution", xaxis_title="Support", yaxis_title="Confidence", xaxis={'autorange':'reversed'},)
+    fig.show()
+    return fig
+
+def adjacency_parallel_category_plot(rules:List):
     '''
         Visualizes the antecedents and consequents of each association rules by drawing lines
         representing each rule across identical vertical axes representing the potential items
@@ -54,7 +89,7 @@ def generate_parallel_category_plot(rules:List):
         fig.show()    
         axis_counter += 1    
     
-def generate_parallel_coordinate_plot(rules:List):
+def adjacency_parallel_coordinate_plot(rules:List):
     '''
         Visualizes the antecedents and consequents of each rule by drawing lines
         representing each rule across identical vertical axis representing the
@@ -257,8 +292,11 @@ def _parallel_category_builder(rules:List, axis_count:int):
     
     return axis_objects
 
-def generate_rule_graph_plotly(rules:List):
-    graph = _rule_graph_generator(rules)
+def adjacency_graph_plotly(rules:Rule):
+    '''
+        This is the plotly version of the 
+    '''
+    graph = _adjacency_graph_generator(rules)
     pos = nx.spring_layout(graph, iterations=100)
     
     edge_x = []
@@ -330,7 +368,7 @@ def generate_rule_graph_plotly(rules:List):
             )
     fig.show()
 
-def generate_rule_graph_graphml(rules:List, output_path:str=None):
+def adjacency_graph_gephi(rules:List[Rule], output_path:str=None):
     '''
     Uses networkX to produce a directed graph representation of the generated
     association rules (both 1-to-1 and compound).
@@ -338,15 +376,18 @@ def generate_rule_graph_graphml(rules:List, output_path:str=None):
     Either displays the resulting graph in the browser with Plotly or 
     export it as a graphml file to be viewed in a program like Gephi
     '''
-    graph = _rule_graph_generator(rules)
+    graph = _adjacency_graph_generator(rules)
     nx.write_gexf(graph, output_path)
     logging.debug("Output rule graph to {}".format(output_path))
     return graph
     
-def _rule_graph_generator(rules:List):
+def _adjacency_graph_generator(rules:List[Rule]):
     '''
-        Helper function to generate the base NetworkX graph from the provided association
-        rule list
+        Helper function to generate a directional network graph using the antecedents and
+        precedents of each Association Rule. This allows the user to discern higher level
+        structures such as chains and hubs which are formed by adjacent rules. 
+        
+        The resulting graph can then be visualized through a variety of means 
     '''
     graph = nx.DiGraph()
     for index, rule in enumerate(rules):
@@ -364,40 +405,8 @@ def _rule_graph_generator(rules:List):
     return graph
     
 
-def generate_rule_strength_plot(rules:List, allow_compound_flag:bool=False):
-    '''
-    Generates a plot showing the distribution of association rules in terms of confidence, support and lift.
-    Visualizes this plot as a Plotly scattergraph and views it in the browser.
-    '''
-    id_list = []
-    confidence_list = []
-    lift_list = []
-    support_list = []
-    
-    for rule in rules:
-        #Discard compound rules (either pre or antecedents) if indicated 
-        if allow_compound_flag == False:
-            if len(rule.rhs) > 1 or len(rule.lhs) > 1:
-                continue
 
-        confidence_list.append(rule.confidence)
-        lift_list.append(rule.lift)
-        support_list.append(rule.support)
-        hover_text = "{} => {}, Lift: {}".format(rule.lhs, rule.rhs, rule.lift)
-        id_list.append(hover_text)
-        
-    colorbar=dict(
-        tick0=0,
-        dtick=1
-    )
-    
-    
-    fig = go.Figure(data=go.Scatter(x=support_list, y=confidence_list, text = id_list, mode='markers', marker={'color': lift_list, 'colorscale': "purp", 'colorbar':{'title': 'Lift'}},))
-    fig.update_layout(title="Association Rules Strength Distribution", xaxis_title="Support", yaxis_title="Confidence", xaxis={'autorange':'reversed'},)
-    fig.show()
-    return fig
-
-def generate_rule_start_end_plot(rules:List, notebook_flag:bool = False):
+def adjacency_scatter_plot(rules:List[Rule], notebook_flag:bool = False):
     '''
     Generates a plot showing the distribution of association rules in terms of association
     rules between antecedent and consequent entities, support and confidence

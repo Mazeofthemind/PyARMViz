@@ -17,7 +17,7 @@ from bokeh.layouts import row
 from PyARMViz.Rule import Rule, generate_rule_from_dict
 import json
 
-def load_shopping() -> List[List]:
+def load_shopping_transactions() -> List[List]:
     '''
         Test dataset of shopping transaction data for testing PyARMViz visualizations
         once association rules
