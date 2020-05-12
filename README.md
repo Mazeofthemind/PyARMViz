@@ -181,8 +181,20 @@ adjacency_graph_gephi(rules)
 `git clone https://github.com/Mazeofthemind/PyARMViz.git`
 2. Navigate into the root directory of the cloned project
 `cd PyARMViz`
-3. Execute Python build and install (may require sudo or alternate Python psudonym)
-`python setup.py install`
+3. Execute Python build and install (may require sudo or alternate Python/PIP psudonym)
+`pip install .`
 
 ## From PyPi (Currently only Testing)
 `pip install --index-url https://test.pypi.org/simple/ PyARMViz`
+
+# Build
+
+This project is currently built under [Poetry](https://python-poetry.org/) a newer Python build tool leverage virtual 
+environments
+
+```
+git clone https://github.com/Mazeofthemind/PyARMViz.git
+pip install poetry
+cd PyARMViz
+python -m poetry build
+'''

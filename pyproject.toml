@@ -1,0 +1,33 @@
+[tool.poetry]
+name = "PyARMViz"
+version = "0.1.4"
+description = "Advanced Python Association Rule Visualization Library"
+authors = ["Mazeofthemind"]
+license = "MIT"
+readme = "README.md"
+homepage = "https://github.com/mazeofthemind/PyARMViz"
+repository = "https://github.com/mazeofthemind/PyARMViz"
+documentation = "https://github.com/mazeofthemind/PyARMViz"
+
+keywords = ["packaging", "dependency", "infer", "pyproject.toml"]
+
+#classifiers = [
+#    "Topic :: Software Development"
+#]
+packages = [
+    { include = "PyARMViz" },
+]
+
+[tool.poetry.dependencies]
+plotly = "^"
+networkx = "^"
+numpy = "^"
+
+[build-system]
+requires = [
+    "plotly",
+        "networkx",
+        "numpy",
+        "poetry"
+]
+build-backend = "poetry.masonry.api"
