@@ -292,6 +292,22 @@ def _parallel_category_builder(rules:List, axis_count:int):
     
     return axis_objects
 
+def is_number(s):
+    try:
+        float(s)
+        return True
+    except ValueError:
+        pass
+ 
+    try:
+        import unicodedata
+        unicodedata.numeric(s)
+        return True
+    except (TypeError, ValueError):
+        pass
+ 
+return False
+
 def adjacency_graph_plotly(rules:Rule):
     '''
         This is the plotly version of the 
@@ -323,10 +339,11 @@ def adjacency_graph_plotly(rules:Rule):
     node_x = []
     node_y = []
     for node in graph.nodes():
-        x, y = pos[node]
-        node_x.append(x)
-        node_y.append(y)
-        node_text.append(node)
+        if (not is_number(node)): ##Right Here Buddy -----------------
+            x, y = pos[node]
+            node_x.append(x)
+            node_y.append(y)
+            node_text.append(node)
 
 
     node_trace = go.Scatter(
