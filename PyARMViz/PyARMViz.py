@@ -306,7 +306,7 @@ def is_number(s):
     except (TypeError, ValueError):
         pass
  
-return False
+    return False
 
 def adjacency_graph_plotly(rules:Rule):
     '''
