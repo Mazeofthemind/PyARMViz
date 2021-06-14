@@ -339,11 +339,10 @@ def adjacency_graph_plotly(rules:Rule):
     node_x = []
     node_y = []
     for node in graph.nodes():
-        if (not is_number(node)): ##Right Here Buddy -----------------
-            x, y = pos[node]
-            node_x.append(x)
-            node_y.append(y)
-            node_text.append(node)
+        x, y = pos[node]
+        node_x.append(x)
+        node_y.append(y)
+        node_text.append(node)
 
 
     node_trace = go.Scatter(
@@ -403,15 +402,20 @@ def _adjacency_graph_generator(rules:List[Rule]):
     '''
     graph = nx.DiGraph()
     for index, rule in enumerate(rules):
-        graph.add_node (index, Weight=int(rule.confidence*10), type="Association_Rule")
-
-        for entity in rule.lhs:
-            graph.add_node(entity, Weight=1, type="Entity")
-            graph.add_edge(entity, index, Normalized_Lift=int(rule.lift*10))
-            
-        for entity in rule.rhs:
-            graph.add_node(entity, Weight=1, type="Entity")
-            graph.add_edge(index, entity, Normalized_Lift=int(rule.lift*10))
+#        graph.add_node (index, Weight=int(rule.confidence*10), type="Association_Rule")
+#
+#        for entity in rule.lhs:
+#            graph.add_node(entity, Weight=1, type="Entity")
+#            graph.add_edge(entity, index, Normalized_Lift=int(rule.lift*10))
+#            
+#        for entity in rule.rhs:
+#            graph.add_node(entity, Weight=1, type="Entity")
+#            graph.add_edge(index, entity, Normalized_Lift=int(rule.lift*10))
+        for entity1 in rule.lhs:
+            graph.add_node(entity1, Weight=1, type="Entity")
+            for entity2 in rule.rhs:
+                graph.add_node(entity2, Weight=1, type="Entity")
+                graph.add_edge(entity1, entity2, Normalized_Lift=int(rule.lift*10))
     
     logging.debug("Generated NetworkX graph for {} rules with {} nodes".format(len(rules), len(graph.nodes)))
     return graph
