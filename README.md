@@ -2,6 +2,17 @@
 
 Advanced Python Association Rule Visualization Library
 
+# Changes:
+
+This Repo was forked and then changed to fix a bug in the original repo:
+  1. Line 5 in PyARMViz throws a TypeError when the file is imported
+  2. 
+Other changes:
+  1. Removed annotation from network diagram graph
+  2. Removed association rule type nodes from network diagram graph, instead connecting each antecedent with every consequent in a given association rule
+
+# For Original Repo, go to: https://github.com/mazeofthemind/PyARMViz
+
 # Summary
 
 Loosely based on [ARulesViz](https://cran.r-project.org/web/packages/arulesViz/index.html) for R
