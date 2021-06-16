@@ -350,6 +350,7 @@ def adjacency_graph_plotly(rules:Rule):
         mode='markers+text',
         #hoverinfo='text',
         text=node_text,
+        textposition = "top center",
         marker=dict(
             showscale=True,
             # colorscale options
