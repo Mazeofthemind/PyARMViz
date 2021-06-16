@@ -344,12 +344,21 @@ def adjacency_graph_plotly(rules:Rule):
         node_y.append(y)
         node_text.append(node)
 
+    hover_text = []
+    for node, adjacencies in enumerate(graph.adjacency()):
+        hover_text.append('\n# of Connections: '+str(len(adjacencies[1])))
+
+    nodeI = 0
+    while nodeI < len(node_text):
+        hover_text[nodeI] = node_text[nodeI] + hover_text[nodeI]
+        nodeI = nodeI + 1
 
     node_trace = go.Scatter(
         x=node_x, y=node_y,
         mode='markers+text',
         hoverinfo='text',
         text=node_text,
+        hovertext = hover_text,
         textposition = "top center",
         marker=dict(
             showscale=True,
