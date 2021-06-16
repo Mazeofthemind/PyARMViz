@@ -346,7 +346,7 @@ def adjacency_graph_plotly(rules:Rule):
 
     hover_text = []
     for node, adjacencies in enumerate(graph.adjacency()):
-        hover_text.append('--\n# of Connections: '+str(len(adjacencies[1])))
+        hover_text.append(' --\n# of Connections: '+str(len(adjacencies[1])))
 
     nodeI = 0
     while nodeI < len(node_text):
