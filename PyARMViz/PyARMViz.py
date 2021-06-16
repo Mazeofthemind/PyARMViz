@@ -347,7 +347,7 @@ def adjacency_graph_plotly(rules:Rule):
 
     node_trace = go.Scatter(
         x=node_x, y=node_y,
-        mode='text',
+        mode='markers+text',
         #hoverinfo='text',
         text=node_text,
         marker=dict(
