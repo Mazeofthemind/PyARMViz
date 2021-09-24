@@ -13,7 +13,7 @@ import logging
 import pandas as pd
 
 from os.path import dirname, exists, expanduser, isdir, join, splitext
-from bokeh.layouts import row
+#from bokeh.layouts import row
 from PyARMViz.Rule import Rule, generate_rule_from_dict
 import json
 

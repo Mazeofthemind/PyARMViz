@@ -2,7 +2,7 @@ import plotly.graph_objects as go
 import networkx as nx
 import numpy as np
 
-from PyARMViz import Rule
+from PyARMViz.Rule import Rule
 
 from typing import List
 import itertools
@@ -292,6 +292,22 @@ def _parallel_category_builder(rules:List, axis_count:int):
     
     return axis_objects
 
+def is_number(s):
+    try:
+        float(s)
+        return True
+    except ValueError:
+        pass
+ 
+    try:
+        import unicodedata
+        unicodedata.numeric(s)
+        return True
+    except (TypeError, ValueError):
+        pass
+ 
+    return False
+
 def adjacency_graph_plotly(rules:Rule):
     '''
         This is the plotly version of the 
@@ -328,12 +344,22 @@ def adjacency_graph_plotly(rules:Rule):
         node_y.append(y)
         node_text.append(node)
 
+    hover_text = []
+    for node, adjacencies in enumerate(graph.adjacency()):
+        hover_text.append(' --\n# of Connections: '+str(len(adjacencies[1])))
+
+    nodeI = 0
+    while nodeI < len(node_text):
+        hover_text[nodeI] = node_text[nodeI] + hover_text[nodeI]
+        nodeI = nodeI + 1
 
     node_trace = go.Scatter(
         x=node_x, y=node_y,
-        mode='markers',
+        mode='markers+text',
         hoverinfo='text',
         text=node_text,
+        hovertext = hover_text,
+        textposition = "top center",
         marker=dict(
             showscale=True,
             # colorscale options
@@ -358,11 +384,6 @@ def adjacency_graph_plotly(rules:Rule):
             showlegend=False,
             hovermode='closest',
             margin=dict(b=20,l=5,r=5,t=40),
-            annotations=[ dict(
-                text="Python code: <a href='https://plotly.com/ipython-notebooks/network-graphs/'> https://plotly.com/ipython-notebooks/network-graphs/</a>",
-                showarrow=False,
-                xref="paper", yref="paper",
-                x=0.005, y=-0.002 ) ],
             xaxis=dict(showgrid=False, zeroline=False, showticklabels=False),
             yaxis=dict(showgrid=False, zeroline=False, showticklabels=False))
             )
@@ -391,15 +412,20 @@ def _adjacency_graph_generator(rules:List[Rule]):
     '''
     graph = nx.DiGraph()
     for index, rule in enumerate(rules):
-        graph.add_node (index, Weight=int(rule.confidence*10), type="Association_Rule")
-
-        for entity in rule.lhs:
-            graph.add_node(entity, Weight=1, type="Entity")
-            graph.add_edge(entity, index, Normalized_Lift=int(rule.lift*10))
-            
-        for entity in rule.rhs:
-            graph.add_node(entity, Weight=1, type="Entity")
-            graph.add_edge(index, entity, Normalized_Lift=int(rule.lift*10))
+#        graph.add_node (index, Weight=int(rule.confidence*10), type="Association_Rule")
+#
+#        for entity in rule.lhs:
+#            graph.add_node(entity, Weight=1, type="Entity")
+#            graph.add_edge(entity, index, Normalized_Lift=int(rule.lift*10))
+#            
+#        for entity in rule.rhs:
+#            graph.add_node(entity, Weight=1, type="Entity")
+#            graph.add_edge(index, entity, Normalized_Lift=int(rule.lift*10))
+        for entity1 in rule.lhs:
+            graph.add_node(entity1, Weight=1, type="Entity")
+            for entity2 in rule.rhs:
+                graph.add_node(entity2, Weight=1, type="Entity")
+                graph.add_edge(entity1, entity2, Normalized_Lift=int(rule.lift*10))
     
     logging.debug("Generated NetworkX graph for {} rules with {} nodes".format(len(rules), len(graph.nodes)))
     return graph
