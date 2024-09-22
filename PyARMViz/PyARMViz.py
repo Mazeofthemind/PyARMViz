@@ -2,7 +2,7 @@ import plotly.graph_objects as go
 import networkx as nx
 import numpy as np
 
-from PyARMViz import Rule
+from PyARMViz.Rule import Rule
 
 from typing import List
 import itertools
